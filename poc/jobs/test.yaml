@@ -1,0 +1,36 @@
+config:
+    owner: "Simon Yung"
+    description: "This is a test job"
+    schedule_interval: "@hourly"
+
+watcher:
+    sleep_time: 15
+    max_retry: 5
+
+steps:
+#    wait:
+#        operator: watcher
+#        watcher_file: xxx
+
+    bash1:
+        operator: bash
+        bash_script: |
+          echo 'hello'
+          echo 'world'
+          echo '{{ var.value.dags_file_path }}'
+
+    bash2:
+        operator: bash
+        bash_file: "{{ var.value.dags_file_path }}/poc/jobs/test.sh"
+        dependency: bash1
+
+    bash3:
+        operator: bash
+        bash_script: |
+          sleep 10
+        dependency: bash1,bash2
+
+    etl1:
+        operator: dbt
+        dbt_job_name: daily_refresh_ua
+        dependency: bash3
